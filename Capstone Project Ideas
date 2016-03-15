@@ -1,7 +1,7 @@
 Springboard Capstone Project 3 Initial Project Ideas
 
 1. Identify the Content Sweet Spot that Leads to Conversion
-As a tours & sightseeing company, we often wonder what is the right mix of user reviews, length of product description, 
+On any e-commerece site, we often wonder what is the right mix of user reviews, length of product description, 
 user review ratings, presence or absence of video, # of user-submitted photos, photos in media gallery, product price, etc 
 that works or does not work for the user when they browse for things to do on our site. Determine if the above content-related data 
 play a significant role in driving conversion on a site.
@@ -18,7 +18,7 @@ Data Source: Past Promotions Data
 Strategic Use Case: 
 - Do reviews contain content that could help us better "tag" our products for better classification and merchandising on our site?
 Potentially provide the data we would need for a faceted navigation type solution. 
-For example, if someone says "lots of walking" or "great for kids" or "romantic" we can use these to tag our products 
+For example, if someone says "great for kids" or "romantic" we can use these to tag our products 
 
 Diagnostics Questions:
 - Determine seasonal differences in ratings
