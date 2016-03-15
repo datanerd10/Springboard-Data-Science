@@ -1,9 +1,13 @@
 Springboard Capstone Project 3 Initial Project Ideas
 
 1. Identify the Content Sweet Spot that Leads to Conversion
-As a tours & sightseeing company, we often wonder what is the right mix of user reviews, length of product description, user review ratings, presence or absence of video, # of user-submitted photos, photos in media gallery, product price, etc that works or does not work for the user when they browse for things to do on our site. Determine if the above content-related data play a significant role in driving conversion on a site.
+As a tours & sightseeing company, we often wonder what is the right mix of user reviews, length of product description, 
+user review ratings, presence or absence of video, # of user-submitted photos, photos in media gallery, product price, etc 
+that works or does not work for the user when they browse for things to do on our site. Determine if the above content-related data 
+play a significant role in driving conversion on a site.
 
-Data Source: Product code, Product classification, word count of product description, review ratings, and all the attributes stated above from content management system
+Data Source: Product code, Product classification, word count of product description, review ratings, and all the attributes stated 
+above from content management system
 
 2. Determing Incremental Value of a Campaign/Promotion 
 Identify a solution to calculate the incremental $ made as a result of a promotion. Predict if a promotion of 10% is better or 15% 
@@ -20,7 +24,8 @@ Diagnostics Questions:
 - Determine seasonal differences in ratings
 - Do some suppliers have multiple products with lower average product review ratings?
 - Do poor reviews mention a disconnect between product description and delivered product?
-Adjust product descriptions for products that are showing low reviews where the customer promise in the product description is not meeting with customer expectations on the trip.
+Adjust product descriptions for products that are showing low reviews where the customer promise in the product description is 
+not meeting with customer expectations on the trip.
 - Is the percentage of good reviews trending up, trending down, or mostly flat?
 
 Data Source: User reviews from our internal database
