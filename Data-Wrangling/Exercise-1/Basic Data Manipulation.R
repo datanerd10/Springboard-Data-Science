@@ -2,7 +2,7 @@
 # Shivani Sheth 
 # R script for 
 # Data Wrangling Exercise 1 Basic Data Manipulation
-# Springboard - Class of March 29, 2016
+# Springboard - Class of Feb 29, 2016
 #--------------------------------------------------------------------------
 
 library(dplyr)
