@@ -1,0 +1,263 @@
+#--------------------------------------------------------------------------
+# Shivani Sheth 
+# R script for determining variables that influence CVR
+# May 7, 2016
+#--------------------------------------------------------------------------
+
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(PerformanceAnalytics)
+
+#Initializing two correlation functions - from Stephen Turner(https://gist.github.com/stephenturner/3492773)
+## Correlation matrix with p-values
+cor.prob <- function (X, dfr = nrow(X) - 2)
+{
+  R <- cor(X, use="pairwise.complete.obs")
+  above <- row(R) < col(R)
+  r2 <- R[above]^2
+  Fstat <- r2 * dfr/(1 - r2)
+  R[above] <- 1 - pf(Fstat, 1, dfr)
+  R[row(R) == col(R)] <- NA
+  R
+}
+
+## Use this to dump the cor.prob output to a 4 column matrix
+## with row/column indices, correlation, and p-value.
+flattenSquareMatrix <- function(m) 
+{
+  if( (class(m) != "matrix") | (nrow(m) != ncol(m))) stop("Must be a square matrix.") 
+  if(!identical(rownames(m), colnames(m))) stop("Row and column names must be equal.")
+  ut <- upper.tri(m)
+  data.frame(i = rownames(m)[row(m)[ut]],
+             j = rownames(m)[col(m)[ut]],
+             cor=t(m)[ut],
+             p=m[ut])
+}
+
+#1. Loads data from csv into data frame  and merges them
+  
+    #read and load product data into dataframe 
+    #use the cleaned data and load it into a csv
+    content <- read.csv("C:/Users/ssheth/Documents/R/Raw Data/product content_data.csv",
+                         stringsAsFactors = FALSE)
+    
+    #ready CVR product data into another dataframe from a csv
+    cvr <- read.csv("C:/Users/ssheth/Documents/R/Raw Data/product CVR_data.csv", 
+                     stringsAsFactors = FALSE)
+    
+    #merge the two dataframes
+    merged <- inner_join(content, cvr, by = "Product.Code")
+    #Optional - writes merged df to csv
+    #write.csv(merged,"C:/Users/ssheth/Documents/R/Output/merged.csv")
+
+#2. Explores data and finds cleaning areas  
+    str(merged)
+    #shows Additional.Information.Wc, Total.Shop.Reviews, Total.Shop.Photos 
+    #are encoded as strings
+  
+    #convert them to int/num
+    merged$Total.Shop.Reviews <- as.numeric(merged$Total.Shop.Reviews)
+    merged$Total.Shop.Photos. <- as.numeric(merged$Total.Shop.Photos)
+    merged$Additional.Information.Wc <- as.numeric(merged$Additional.Information.Wc)
+    #head(tbl) a string value; regex to convert comma to period or remove it
+    
+    #checks for proper numeric transformation
+    merged %>%
+      select(Total.Shop.Reviews) %>% 
+      distinct  %>% 
+      arrange(desc(Total.Shop.Reviews))
+    
+    merged %>%  
+      select(Total.Shop.Photos) %>% 
+      distinct  %>% 
+      arrange(desc(Total.Shop.Photos))
+    
+    merged %>%  
+      select(Additional.Information.Wc) %>% 
+      distinct  %>% 
+      arrange(desc(Additional.Information.Wc))
+  
+#3. EDA
+    
+    #3a. Plots the distribution of variables
+   
+    #takes log of values for highly skewed data
+    #adding small number to each variable to prevent log(0) becoming -infinity
+    
+    ggplot(merged, aes(Total.Shop.Reviews + 0.0001)) +
+      geom_histogram() +
+      scale_x_log10()
+    
+    ggplot(merged, aes(Total.Shop.Photos + 0.0001)) + 
+      geom_histogram() +
+      scale_x_log10()
+    
+    merged %>%  
+      group_by(Total.Videos) %>% 
+      tally()
+    
+    ggplot(merged, aes(Additional.Information.Wc + 0.0001)) + 
+      geom_histogram() + 
+      xlab("Additional Information WC")
+    
+    ggplot(merged, aes(Exclusions.Wc + 0.0001)) + 
+      geom_histogram()
+    
+    ggplot(merged, aes(Inclusions.Wc + 0.0001)) + 
+      geom_histogram()
+    
+    ggplot(merged, aes(Highlightstitle.Wc + 0.0001)) + 
+      geom_histogram(binwidth = 0.5)
+    
+    ggplot(merged, aes(Insidertips.Wc + 0.0001)) + 
+      geom_histogram() + 
+      scale_x_log10()
+    
+    ggplot(merged, aes(Unique.Intro.WC + 0.0001)) + 
+      geom_histogram(binwidth = 1)
+    
+    ggplot(merged, aes(Unique.Product.Text.WC + 0.0001)) + 
+      geom_histogram(binwidth = 1) 
+    
+    #3b. Identifies correlation between Independent variables
+    #selects numeric columns/independent variables only
+    Corrmerged <- select(merged, c(contains("WC"), contains("Total")))
+    
+    corrs <- cor(Corrmerged)
+    cor.prob(Corrmerged)
+    # adds p-value and corr co-efficients
+    flattenSquareMatrix(cor.prob(Corrmerged))
+    
+    #plots corerlation matrix
+    corrplot(corrs, method="number", type = "lower")
+    corrplot.mixed(corrs, lower="color", upper="number")
+    chart.Correlation(Corrmerged, histogram=TRUE, pch = 19)
+    
+#4. One variable regression for CVR
+  
+    model <- lm(formula = CVR ~ Total.Shop.Reviews, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Total.Shop.Photos, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Total.Videos, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Highlightstitle.Wc, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Inclusions.Wc, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Exclusions.Wc, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Insidertips.Wc, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Unique.Intro.WC, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Unique.Product.Text.WC, data = merged)
+    summary(model)
+    
+    model <- lm(formula = CVR ~ Additional.Information.Wc, data = merged)
+    summary(model)
+
+    #Highlights Title, Insidertips have > 0.05 p-value hence will be omitted
+
+#4. Plot one-variable lm models
+    merged %>%  
+      filter(Total.Shop.Reviews > 0) %>% 
+      #filter(Total.Shop.Reviews == 1 | Total.Shop.Reviews == 0) %>% 
+      ggplot(aes(x = Total.Shop.Reviews, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+  
+    merged %>%  
+      #filter(Total.Shop.Photos == 0) %>% 
+      #filter(Total.Shop.Photos == 1 | Total.Shop.Photos == 0) %>% 
+      ggplot(aes(x = Total.Shop.Photos, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+  
+    merged %>%  
+      #filter(Total.Videos <= 1) %>%
+      ggplot( aes(x = Total.Videos, y = CVR, col = Primary.Group.Name)) + 
+      geom_point(alpha = 0.4) +
+      stat_smooth(method = "lm", col = 'red') +
+      facet_wrap(~Primary.Group.Name)
+      
+    ggplot(merged, aes(x = Unique.Product.Text.WC, y = CVR)) + 
+      geom_point(alpha = 0.4) +
+      geom_jitter(alpha = 1/25) +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+      #Downward trend in CVR as WC increases
+    
+    merged %>%  
+      filter(Insidertips.Wc > 0) %>% 
+      #filter(Insidertips.Wc == 1 | Insidertips.Wc == 0) %>% 
+      ggplot(aes(x = Insidertips.Wc,  y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red")
+      #sweet spot 20-50 words
+    
+    merged %>%
+      filter(Additional.Information.Wc > 0) %>% 
+      #filter(Additional.Information.Wc == 1 | Additional.Information.Wc == 0) %>% 
+      ggplot(aes(x = Additional.Information.Wc, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      #xlim(c(0, 250)) +
+      ylim(c(0, 0.05)) +
+      facet_wrap(~Primary.Group.Name)
+        
+    merged %>%  
+      filter(Highlightstitle.Wc > 0) %>% 
+      #filter(Highlightstitle.Wc == 1 | Highlightstitle.Wc == 0) %>% 
+      ggplot(aes(x = Highlightstitle.Wc, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+      
+    merged %>%  
+      #filter(Unique.Intro.WC > 0) %>% 
+      #filter(Unique.Intro.WC == 1 | Unique.Intro.WC == 0) %>% 
+      ggplot(aes(x = Unique.Intro.WC, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+    
+    merged %>%  
+      #filter(Inclusions.Wc == 0) %>% 
+      #filter(Inclusions.Wc == 1 | Inclusions.Wc == 0) %>% 
+      ggplot(aes(x = Inclusions.Wc, y = CVR)) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+      #clear downward trend as WC increases
+      #sweet spot upto 50 wc
+    
+    merged %>%  
+      #filter(Exclusions.Wc > 0) %>% 
+      #filter(Exclusions.Wc == 1 | Exclusions.Wc == 0) %>% 
+      ggplot(aes(x = Exclusions.Wc, y = CVR)) + 
+      geom_point(alpha = 0.4) +
+      geom_jitter(alpha = 1/50) +
+      xlim(c(0, 50)) +
+      stat_smooth(method = "lm", col = "red") +
+      facet_wrap(~Primary.Group.Name)
+    
+#5. Linear Regression using all independent variables
+    
+    model <- lm(formula = CVR ~ Total.Shop.Reviews + Total.Shop.Photos + Total.Videos
+                                + Inclusions.Wc + Exclusions.Wc + Unique.Intro.WC
+                                + Unique.Product.Text.WC + Additional.Information.Wc, 
+                data = merged)
+    summary(model)
+    
